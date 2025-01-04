@@ -26,22 +26,18 @@ jobs:
             LABEL=$1
             END_CURSOR=$2
 
-            QUERY=$(cat <<EOF
-            {
-              "query": "query {
-                repository(owner: \"$OWNER\", name: \"$REPO\") {
-                  issues(first: 100, labels: [\"$LABEL\"], states: CLOSED, after: $END_CURSOR) {
-                    totalCount
-                    pageInfo {
-                      endCursor
-                      hasNextPage
-                    }
+            QUERY="{\"query\": \"query {
+              repository(owner: \\\"$OWNER\\\", name: \\\"$REPO\\\") {
+                issues(first: 100, labels: [\\\"$LABEL\\\"], states: CLOSED, after: $END_CURSOR) {
+                  totalCount
+                  pageInfo {
+                    endCursor
+                    hasNextPage
                   }
                 }
-              }"
-            }
-            EOF
-            )
+              }
+            }\"}"
+            
             echo $QUERY
           }
 

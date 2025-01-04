@@ -1,7 +1,8 @@
-{"resolved_bugs": DEBUG: Constructed Query for bug: 
-DEBUG: Raw Response for bug: {"errors":[{"message":"A query attribute must be specified and must be a string."}]}
-0, "resolved_documentation": DEBUG: Constructed Query for documentation: 
-DEBUG: Raw Response for documentation: {"errors":[{"message":"A query attribute must be specified and must be a string."}]}
-0, "resolved_enhancements": DEBUG: Constructed Query for enhancement: 
-DEBUG: Raw Response for enhancement: {"errors":[{"message":"A query attribute must be specified and must be a string."}]}
-0}
+{
+  "resolved_bugs": DEBUG: Response for label bug: {"errors":[{"message":"A query attribute must be specified and must be a string."}]}
+0,
+  "resolved_documentation": DEBUG: Response for label documentation: {"errors":[{"message":"A query attribute must be specified and must be a string."}]}
+0,
+  "resolved_enhancements": DEBUG: Response for label enhancement: {"errors":[{"message":"A query attribute must be specified and must be a string."}]}
+0
+}

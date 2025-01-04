@@ -68,8 +68,16 @@ jobs:
             HAS_NEXT_PAGE=$(echo $RESPONSE | jq '.data.repository.issues.pageInfo.hasNextPage')
             END_CURSOR=$(echo $RESPONSE | jq -r '.data.repository.issues.pageInfo.endCursor')
 
+            # Log END_CURSOR to see if there are any strange characters
+            echo "DEBUG: END_CURSOR = $END_CURSOR"
+
+            # Escape control characters using printf
             ESCAPED_CURSOR=$(printf '%s' "$END_CURSOR" | jq -R .)
 
+            # Log the escaped cursor value
+            echo "DEBUG: ESCAPED_CURSOR = $ESCAPED_CURSOR"
+
+            # Update query.json with the new cursor
             jq --arg endCursor "$ESCAPED_CURSOR" '.variables.endCursor = $endCursor' query.json > temp.json && mv temp.json query.json
 
             if [ "$HAS_NEXT_PAGE" != "true" ]; then
@@ -89,6 +97,4 @@ jobs:
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
-          git add public/bug-count.json
-          git commit -m "Update bug count" || echo "No changes to commit"
-          git push
+          git add publ

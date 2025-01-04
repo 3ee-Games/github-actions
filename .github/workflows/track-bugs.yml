@@ -18,20 +18,16 @@ jobs:
         
       - name: Fetch All Closed Issues (GraphQL)
         run: |
-          TOKEN=${{ secrets.PAT_TOKEN }}
+          TOKEN=${{ secrets.GITHUB_TOKEN }}
           OWNER="3ee-Games"
           REPO="hoa-simulator"
-          END_CURSOR=null
-          TOTAL_BUGS=0
-          TOTAL_DOCS=0
-          TOTAL_ENHANCEMENTS=0
-          
+
           fetch_issues() {
             LABEL=$1
             END_CURSOR=$2
 
             jq -n \
-              --argjson endCursor "$END_CURSOR" \
+              --arg endCursor "$END_CURSOR" \
               --arg label "$LABEL" \
               '{
                 query: "query($endCursor: String, $label: String!) {
@@ -52,23 +48,23 @@ jobs:
               }'
           }
 
-          calculate_total() {
-            local label=$1
-            local total=0
+          count_issues_by_label() {
+            LABEL=$1
+            TOTAL_COUNT=0
+            END_CURSOR=null
+
             while :; do
-              QUERY=$(fetch_issues "$label" "$END_CURSOR")
-              
-              echo "DEBUG: Constructed Query for $label: $QUERY"
-              
+              QUERY=$(fetch_issues "$LABEL" "$END_CURSOR")
+
               RESPONSE=$(curl -s -X POST -H "Authorization: Bearer $TOKEN" \
                 -H "Content-Type: application/json" \
                 -d "$QUERY" https://api.github.com/graphql)
-              
-              echo "DEBUG: Raw Response for $label: $RESPONSE"
+
+              echo "DEBUG: Response for label $LABEL: $RESPONSE"
 
               BUG_COUNT=$(echo $RESPONSE | jq '.data.repository.issues.totalCount')
               if [ "$BUG_COUNT" != "null" ]; then
-                total=$((total + BUG_COUNT))
+                TOTAL_COUNT=$((TOTAL_COUNT + BUG_COUNT))
               fi
 
               HAS_NEXT_PAGE=$(echo $RESPONSE | jq '.data.repository.issues.pageInfo.hasNextPage')
@@ -78,25 +74,31 @@ jobs:
                 break
               fi
             done
-            echo $total
+
+            echo "$TOTAL_COUNT"
           }
 
-          TOTAL_BUGS=$(calculate_total "bug")
-          TOTAL_DOCS=$(calculate_total "documentation")
-          TOTAL_ENHANCEMENTS=$(calculate_total "enhancement")
+          # Fetch counts for different labels
+          BUG_COUNT=$(count_issues_by_label "bug")
+          DOC_COUNT=$(count_issues_by_label "documentation")
+          ENHANCEMENT_COUNT=$(count_issues_by_label "enhancement")
 
           mkdir -p public
-          echo "{\"resolved_bugs\": $TOTAL_BUGS, \"resolved_documentation\": $TOTAL_DOCS, \"resolved_enhancements\": $TOTAL_ENHANCEMENTS}" > public/issue-count.json
+          echo "{
+            \"resolved_bugs\": $BUG_COUNT,
+            \"resolved_documentation\": $DOC_COUNT,
+            \"resolved_enhancements\": $ENHANCEMENT_COUNT
+          }" > public/issue-count.json
 
       - name: Check Git Status
         run: |
           git status
           git diff
 
-      - name: Commit and Push Issue Count
+      - name: Commit and Push Issue Counts
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
           git add public/issue-count.json
-          git commit -m "Update issue count" || echo "No changes to commit"
+          git commit -m "Update issue counts" || echo "No changes to commit"
           git push

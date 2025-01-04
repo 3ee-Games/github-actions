@@ -53,7 +53,6 @@ jobs:
                 -H "Content-Type: application/json" \
                 -d "$QUERY" https://api.github.com/graphql)
 
-              echo "DEBUG: Response for label $LABEL: $RESPONSE"
 
               BUG_COUNT=$(echo $RESPONSE | jq '.data.repository.issues.totalCount')
               if [ "$BUG_COUNT" != "null" ]; then

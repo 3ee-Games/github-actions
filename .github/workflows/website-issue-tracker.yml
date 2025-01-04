@@ -1,0 +1,96 @@
+name: Track 3ee Frontend Resolved Issues
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  #Runs daily at midnight
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: read
+
+jobs:
+  track-issues:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+        
+      - name: Fetch All Closed Issues (GraphQL)
+        run: |
+          TOKEN=${{ secrets.PAT_TOKEN }}
+          OWNER="3ee-Games"
+          REPO="3ee-games-site"
+
+          fetch_issues() {
+            LABEL=$1
+            END_CURSOR=$2
+
+            QUERY="{\"query\": \"query {
+              repository(owner: \\\"$OWNER\\\", name: \\\"$REPO\\\") {
+                issues(first: 100, labels: [\\\"$LABEL\\\"], states: CLOSED, after: $END_CURSOR) {
+                  totalCount
+                  pageInfo {
+                    endCursor
+                    hasNextPage
+                  }
+                }
+              }
+            }\"}"
+            
+            echo $QUERY
+          }
+
+          count_issues_by_label() {
+            LABEL=$1
+            TOTAL_COUNT=0
+            END_CURSOR="null"
+
+            while :; do
+              QUERY=$(fetch_issues "$LABEL" "$END_CURSOR")
+
+              RESPONSE=$(curl -s -X POST -H "Authorization: Bearer $TOKEN" \
+                -H "Content-Type: application/json" \
+                -d "$QUERY" https://api.github.com/graphql)
+
+
+              BUG_COUNT=$(echo $RESPONSE | jq '.data.repository.issues.totalCount')
+              if [ "$BUG_COUNT" != "null" ]; then
+                TOTAL_COUNT=$((TOTAL_COUNT + BUG_COUNT))
+              fi
+
+              HAS_NEXT_PAGE=$(echo $RESPONSE | jq '.data.repository.issues.pageInfo.hasNextPage')
+              END_CURSOR=$(echo $RESPONSE | jq -r '.data.repository.issues.pageInfo.endCursor')
+
+              if [ "$HAS_NEXT_PAGE" != "true" ]; then
+                break
+              fi
+            done
+
+            echo "$TOTAL_COUNT"
+          }
+
+          # Fetch counts for different labels
+          BUG_COUNT=$(count_issues_by_label "bug")
+          DOC_COUNT=$(count_issues_by_label "documentation")
+          ENHANCEMENT_COUNT=$(count_issues_by_label "enhancement")
+
+          mkdir -p public
+          echo "{
+            \"resolved_bugs\": $BUG_COUNT,
+            \"resolved_documentation\": $DOC_COUNT,
+            \"resolved_enhancements\": $ENHANCEMENT_COUNT
+          }" > public/frontend-issue-count.json
+
+      - name: Check Git Status
+        run: |
+          git status
+          git diff
+
+      - name: Commit and Push Issue Counts
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add public/frontend-issue-count.json
+          git commit -m "Update issue counts" || echo "No changes to commit"
+          git push

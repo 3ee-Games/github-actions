@@ -1,9 +1,9 @@
-name: Track Resolved Issues
+name: Track HOA Sim Resolved Issues
 
 on:
   schedule:
-    - cron: '0 0 * * *'  # Runs daily at midnight
-  workflow_dispatch:  # Manual trigger
+    - cron: '0 0 * * *'  #Runs daily at midnight
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -80,7 +80,7 @@ jobs:
             \"resolved_bugs\": $BUG_COUNT,
             \"resolved_documentation\": $DOC_COUNT,
             \"resolved_enhancements\": $ENHANCEMENT_COUNT
-          }" > public/issue-count.json
+          }" > public/hoa-issue-count.json
 
       - name: Check Git Status
         run: |
@@ -91,6 +91,6 @@ jobs:
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
-          git add public/issue-count.json
+          git add public/hoa-issue-count.json
           git commit -m "Update issue counts" || echo "No changes to commit"
           git push

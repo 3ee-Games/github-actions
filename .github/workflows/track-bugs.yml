@@ -24,13 +24,20 @@ jobs:
           # Create temporary GraphQL query file
           cat <<EOF > query.json
           {
-            "query": "query(\$endCursor: String) {
-              repository(owner: \"$OWNER\", name: \"$REPO\") {
-                issues(first: 100, after: \$endCursor, labels: [\"$LABEL\"], states: CLOSED) {
+            "query": "query {
+              repository(owner: \"3ee-Games\", name: \"3ee-api\") {
+                issues(first: 100, labels: [\"bug\"], states: CLOSED) {
                   totalCount
                   edges {
                     node {
                       id
+                      title
+                      state
+                      labels(first: 10) {
+                        nodes {
+                          name
+                        }
+                      }
                     }
                   }
                   pageInfo {
@@ -39,11 +46,9 @@ jobs:
                   }
                 }
               }
-            }",
-            "variables": {
-              "endCursor": null
-            }
+            }"
           }
+
           EOF
 
           while :; do

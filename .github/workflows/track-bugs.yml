@@ -21,39 +21,46 @@ jobs:
           TOKEN=${{ secrets.GITHUB_TOKEN }}
           OWNER="3ee-Games"
           REPO="hoa-simulator"
-          END_CURSOR="null"
+          END_CURSOR=null
           TOTAL_BUGS=0
           
-          # Create the GraphQL query
-          QUERY='{
-            "query": "query($endCursor: String) {
-              repository(owner: \"3ee-Games\", name: \"hoa-simulator\") {
-                issues(first: 100, labels: [\"bug\"], states: CLOSED, after: $endCursor) {
-                  totalCount
-                  pageInfo {
-                    endCursor
-                    hasNextPage
+          # Construct query dynamically
+          create_query() {
+            jq -n \
+              --arg owner "$OWNER" \
+              --arg repo "$REPO" \
+              --argjson endCursor "$END_CURSOR" \
+              '{
+                query: "query($endCursor: String) {
+                  repository(owner: $owner, name: $repo) {
+                    issues(first: 100, labels: [\"bug\"], states: CLOSED, after: $endCursor) {
+                      totalCount
+                      pageInfo {
+                        endCursor
+                        hasNextPage
+                      }
+                    }
                   }
+                }",
+                variables: {
+                  endCursor: $endCursor
                 }
-              }
-            }",
-            "variables": { "endCursor": '"$END_CURSOR"' }
-          }'
-
-          # Print the constructed query to debug it
-          echo "DEBUG: Constructed Query: $QUERY"
+              }'
+          }
 
           # Loop to handle pagination and get total bug count
           while :; do
-            # Make the API request
+            QUERY=$(create_query)
+            
+            # Debugging - Print the query
+            echo "DEBUG: Constructed Query: $QUERY"
+            
             RESPONSE=$(curl -s -X POST -H "Authorization: Bearer $TOKEN" \
               -H "Content-Type: application/json" \
               -d "$QUERY" https://api.github.com/graphql)
-
-            # Debugging: Print the raw API response to check what's returned
+            
             echo "DEBUG: Raw Response: $RESPONSE"
 
-            # Check if totalCount is returned and increment total bugs
             BUG_COUNT=$(echo $RESPONSE | jq '.data.repository.issues.totalCount')
             if [ "$BUG_COUNT" != "null" ]; then
               TOTAL_BUGS=$((TOTAL_BUGS + BUG_COUNT))
@@ -62,13 +69,9 @@ jobs:
             HAS_NEXT_PAGE=$(echo $RESPONSE | jq '.data.repository.issues.pageInfo.hasNextPage')
             END_CURSOR=$(echo $RESPONSE | jq -r '.data.repository.issues.pageInfo.endCursor')
 
-            # If no more pages, stop the loop
             if [ "$HAS_NEXT_PAGE" != "true" ]; then
               break
             fi
-
-            # Update the cursor for the next iteration
-            QUERY=$(echo "$QUERY" | jq --arg endCursor "$END_CURSOR" '.variables.endCursor = $endCursor')
           done
 
           mkdir -p public

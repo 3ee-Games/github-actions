@@ -46,6 +46,9 @@ jobs:
               -H "Content-Type: application/json" \
               -d "$QUERY" https://api.github.com/graphql)
 
+            # Debugging: Print the raw API response to check what's returned
+            echo "DEBUG: Raw Response: $RESPONSE"
+
             BUG_COUNT=$(echo $RESPONSE | jq '.data.repository.issues.totalCount')
             TOTAL_BUGS=$((TOTAL_BUGS + BUG_COUNT))
 

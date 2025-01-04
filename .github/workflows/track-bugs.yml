@@ -21,38 +21,44 @@ jobs:
           END_CURSOR="null"
           TOTAL_BUGS=0
 
-          while :; do
-            QUERY=$(cat << 'EOF'
-            {
-              "query": "{
-                repository(owner: \"'"$OWNER"'\", name: \"'"$REPO"'\") {
-                  issues(first: 100, after: '"$END_CURSOR"', labels: [\"'"$LABEL"'\"] , states: CLOSED) {
-                    totalCount
-                    edges {
-                      node {
-                        id
-                      }
-                    }
-                    pageInfo {
-                      endCursor
-                      hasNextPage
+          # Create temporary GraphQL query file
+          cat <<EOF > query.json
+          {
+            "query": "query(\$endCursor: String) {
+              repository(owner: \"$OWNER\", name: \"$REPO\") {
+                issues(first: 100, after: \$endCursor, labels: [\"$LABEL\"], states: CLOSED) {
+                  totalCount
+                  edges {
+                    node {
+                      id
                     }
                   }
+                  pageInfo {
+                    endCursor
+                    hasNextPage
+                  }
                 }
-              }"
+              }
+            }",
+            "variables": {
+              "endCursor": null
             }
-            EOF
-            )
+          }
+          EOF
 
+          while :; do
             RESPONSE=$(curl -s -X POST -H "Authorization: Bearer $TOKEN" \
               -H "Content-Type: application/json" \
-              -d "$QUERY" https://api.github.com/graphql)
-              
+              -d @query.json https://api.github.com/graphql)
+
             BUG_COUNT=$(echo $RESPONSE | jq '.data.repository.issues.edges | length')
             TOTAL_BUGS=$((TOTAL_BUGS + BUG_COUNT))
             
             HAS_NEXT_PAGE=$(echo $RESPONSE | jq '.data.repository.issues.pageInfo.hasNextPage')
             END_CURSOR=$(echo $RESPONSE | jq -r '.data.repository.issues.pageInfo.endCursor')
+
+            # Update cursor for the next loop iteration
+            jq --arg endCursor "$END_CURSOR" '.variables.endCursor = $endCursor' query.json > temp.json && mv temp.json query.json
 
             if [ "$HAS_NEXT_PAGE" != "true" ]; then
               break

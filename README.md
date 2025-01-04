@@ -18,15 +18,6 @@ This process provides transparency to our players and ensures they know that we 
 - **Transparency:** Every change made is automatically documented in the issue-count JSON file.
 - **Confidence:** Builds confidence in the players that the development team is actively working on game-related issues.
 
-## How It Works
-
-The workflow is scheduled to run daily (at midnight) via a cron job. It can also be triggered manually using the `workflow_dispatch` event.
-
-The process includes:
-1. **Fetching Issues:** Queries are made using GitHub's GraphQL API to fetch issues from the repository, filtered by labels.
-2. **Issue Count:** It counts issues based on labels like `bug`, `documentation`, and `enhancement`.
-3. **JSON Update:** The totals for each label are then updated in a JSON file (`public/issue-count.json`) within the repository.
-
 ## Benefits
 
 - **Keeps players informed:** Our players can see the status of issues being tracked and resolved.

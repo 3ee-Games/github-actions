@@ -12,26 +12,53 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Fetch All Closed Bug Issues (Paginated)
+      - name: Fetch All Closed Bug Issues (GraphQL)
         run: |
-          PAGE=1
+          TOKEN=${{ secrets.GITHUB_TOKEN }}
+          OWNER="3ee-Games"
+          REPO="3ee-api"
+          LABEL="bug"
+          END_CURSOR=null
           TOTAL_BUGS=0
-          
+
           while :; do
-            RESPONSE=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-                 -H "Accept: application/vnd.github.v3+json" \
-                 "https://api.github.com/repos/3ee-Games/3ee-api/issues?labels=bug&state=closed&page=$PAGE&per_page=2")
+            QUERY=$(cat << EOF
+            {
+              "query": "{
+                repository(owner: \\\"$OWNER\\\", name: \\\"$REPO\\\") {
+                  issues(first: 100, after: $END_CURSOR, labels: [\\\"$LABEL\\\"], states: CLOSED) {
+                    totalCount
+                    edges {
+                      node {
+                        id
+                      }
+                    }
+                    pageInfo {
+                      endCursor
+                      hasNextPage
+                    }
+                  }
+                }
+              }"
+            }
+            EOF
+            )
+
+            RESPONSE=$(curl -s -X POST -H "Authorization: Bearer $TOKEN" \
+              -H "Content-Type: application/json" \
+              -d "$QUERY" https://api.github.com/graphql)
+              
+            BUG_COUNT=$(echo $RESPONSE | jq '.data.repository.issues.edges | length')
+            TOTAL_BUGS=$((TOTAL_BUGS + BUG_COUNT))
             
-            BUG_COUNT=$(echo $RESPONSE | jq '. | length')
-            
-            if [ $BUG_COUNT -eq 0 ]; then
+            HAS_NEXT_PAGE=$(echo $RESPONSE | jq '.data.repository.issues.pageInfo.hasNextPage')
+            END_CURSOR=$(echo $RESPONSE | jq -r '.data.repository.issues.pageInfo.endCursor')
+
+            if [ "$HAS_NEXT_PAGE" != "true" ]; then
               break
             fi
-            
-            TOTAL_BUGS=$((TOTAL_BUGS + BUG_COUNT))
-            PAGE=$((PAGE + 1))
           done
-          
+
           echo "{\"resolved_bugs\": $TOTAL_BUGS}" > public/bug-count.json
 
       - name: Commit and Push Bug Count

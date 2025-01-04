@@ -16,7 +16,7 @@ jobs:
         run: |
           TOKEN=${{ secrets.GITHUB_TOKEN }}
           OWNER="3ee-Games"
-          REPO="3ee-api"
+          REPO="hoa-simulator"
           LABEL="bug"
           END_CURSOR="null"
           TOTAL_BUGS=0

@@ -22,72 +22,30 @@ jobs:
           OWNER="3ee-Games"
           REPO="hoa-simulator"
           LABEL="bug"
-          END_CURSOR="null"
           TOTAL_BUGS=0
           
-          # Create temporary GraphQL query file with correct handling for null cursor
+          # Create temporary GraphQL query file to fetch closed issues
           cat <<EOF > query.json
           {
-            "query": "query(\$endCursor: String) {
+            "query": "query {
               repository(owner: \"3ee-Games\", name: \"hoa-simulator\") {
-                issues(first: 100, labels: [\"bug\"], states: CLOSED, after: \$endCursor) {
+                issues(first: 100, labels: [\"bug\"], states: CLOSED) {
                   totalCount
-                  edges {
-                    node {
-                      id
-                      title
-                      state
-                      labels(first: 10) {
-                        nodes {
-                          name
-                        }
-                      }
-                    }
-                  }
-                  pageInfo {
-                    endCursor
-                    hasNextPage
-                  }
                 }
               }
-            }",
-            "variables": {
-              "endCursor": $END_CURSOR
-            }
+            }"
           }
           EOF
 
-          while :; do
-            RESPONSE=$(curl -s -X POST -H "Authorization: Bearer $TOKEN" \
-              -H "Content-Type: application/json" \
-              -d @query.json https://api.github.com/graphql)
+          RESPONSE=$(curl -s -X POST -H "Authorization: Bearer $TOKEN" \
+            -H "Content-Type: application/json" \
+            -d @query.json https://api.github.com/graphql)
 
-            BUG_COUNT=$(echo $RESPONSE | jq '.data.repository.issues.edges | length')
-            TOTAL_BUGS=$((TOTAL_BUGS + BUG_COUNT))
+          # Get the total count of closed bug issues
+          TOTAL_BUGS=$(echo $RESPONSE | jq '.data.repository.issues.totalCount')
 
-            HAS_NEXT_PAGE=$(echo $RESPONSE | jq '.data.repository.issues.pageInfo.hasNextPage')
-            END_CURSOR=$(echo $RESPONSE | jq -r '.data.repository.issues.pageInfo.endCursor')
-
-            # Log END_CURSOR to see if there are any strange characters
-            echo "DEBUG: END_CURSOR = $END_CURSOR"
-
-            # If END_CURSOR is "null", we pass null (not as a string)
-            if [ "$END_CURSOR" = "null" ]; then
-              END_CURSOR=null  # this will be passed as null, not the string "null"
-            else
-              END_CURSOR=$(printf '%s' "$END_CURSOR" | jq -R .)  # escape normal values
-            fi
-
-            # Log the final END_CURSOR
-            echo "DEBUG: FINAL END_CURSOR = $END_CURSOR"
-
-            # Update query.json with the new cursor
-            jq --argjson endCursor "$END_CURSOR" '.variables.endCursor = $endCursor' query.json > temp.json && mv temp.json query.json
-
-            if [ "$HAS_NEXT_PAGE" != "true" ]; then
-              break
-            fi
-          done
+          # Log the total bugs count for debugging
+          echo "DEBUG: Total bugs resolved = $TOTAL_BUGS"
 
           mkdir -p public
           echo "{\"resolved_bugs\": $TOTAL_BUGS}" > public/bug-count.json

@@ -18,15 +18,15 @@ jobs:
           OWNER="3ee-Games"
           REPO="3ee-api"
           LABEL="bug"
-          END_CURSOR=null
+          END_CURSOR="null"
           TOTAL_BUGS=0
 
           while :; do
-            QUERY=$(cat << EOF
+            QUERY=$(cat << 'EOF'
             {
               "query": "{
-                repository(owner: \\\"$OWNER\\\", name: \\\"$REPO\\\") {
-                  issues(first: 100, after: $END_CURSOR, labels: [\\\"$LABEL\\\"], states: CLOSED) {
+                repository(owner: \"'"$OWNER"'\", name: \"'"$REPO"'\") {
+                  issues(first: 100, after: '"$END_CURSOR"', labels: [\"'"$LABEL"'\"] , states: CLOSED) {
                     totalCount
                     edges {
                       node {

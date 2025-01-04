@@ -1,8 +1,5 @@
 {
-  "resolved_bugs": DEBUG: Response for label bug: {"data":{"repository":{"issues":{"totalCount":57,"pageInfo":{"endCursor":"Y3Vyc29yOnYyOpK5MjAyNC0xMi0yOVQxNDo1NjozMy0wNTowMM6kpqsm","hasNextPage":false}}}}}
-57,
-  "resolved_documentation": DEBUG: Response for label documentation: {"data":{"repository":{"issues":{"totalCount":5,"pageInfo":{"endCursor":"Y3Vyc29yOnYyOpK5MjAyNC0xMi0wNFQxMTo1NzowMC0wNTowMM6iBjls","hasNextPage":false}}}}}
-5,
-  "resolved_enhancements": DEBUG: Response for label enhancement: {"data":{"repository":{"issues":{"totalCount":77,"pageInfo":{"endCursor":"Y3Vyc29yOnYyOpK5MjAyNS0wMS0wM1QwMDowNzoxNC0wNTowMM6k7NIe","hasNextPage":false}}}}}
-77
+  "resolved_bugs": 57,
+  "resolved_documentation": 5,
+  "resolved_enhancements": 77
 }

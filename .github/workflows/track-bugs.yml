@@ -1,4 +1,4 @@
-name: Track Resolved Bugs
+name: Track Resolved Issues
 
 on:
   schedule:
@@ -10,28 +10,33 @@ permissions:
   issues: read
 
 jobs:
-  track-bugs:
+  track-issues:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
         
-      - name: Fetch All Closed Bug Issues (GraphQL)
+      - name: Fetch All Closed Issues (GraphQL)
         run: |
           TOKEN=${{ secrets.PAT_TOKEN }}
           OWNER="3ee-Games"
           REPO="hoa-simulator"
-          END_CURSOR=null  # Proper null value
+          END_CURSOR=null
           TOTAL_BUGS=0
+          TOTAL_DOCS=0
+          TOTAL_ENHANCEMENTS=0
           
-          # Construct query dynamically
-          create_query() {
+          fetch_issues() {
+            LABEL=$1
+            END_CURSOR=$2
+
             jq -n \
               --argjson endCursor "$END_CURSOR" \
+              --arg label "$LABEL" \
               '{
-                query: "query($endCursor: String) {
+                query: "query($endCursor: String, $label: String!) {
                   repository(owner: \"3ee-Games\", name: \"hoa-simulator\") {
-                    issues(first: 100, labels: [\"bug\"], states: CLOSED, after: $endCursor) {
+                    issues(first: 100, labels: [$label], states: CLOSED, after: $endCursor) {
                       totalCount
                       pageInfo {
                         endCursor
@@ -41,49 +46,57 @@ jobs:
                   }
                 }",
                 variables: {
-                  endCursor: $endCursor
+                  endCursor: $endCursor,
+                  label: $label
                 }
               }'
           }
 
-          # Loop to handle pagination and get total bug count
-          while :; do
-            QUERY=$(create_query)
-            
-            # Debugging - Print the query
-            echo "DEBUG: Constructed Query: $QUERY"
-            
-            RESPONSE=$(curl -s -X POST -H "Authorization: Bearer $TOKEN" \
-              -H "Content-Type: application/json" \
-              -d "$QUERY" https://api.github.com/graphql)
-            
-            echo "DEBUG: Raw Response: $RESPONSE"
+          calculate_total() {
+            local label=$1
+            local total=0
+            while :; do
+              QUERY=$(fetch_issues "$label" "$END_CURSOR")
+              
+              echo "DEBUG: Constructed Query for $label: $QUERY"
+              
+              RESPONSE=$(curl -s -X POST -H "Authorization: Bearer $TOKEN" \
+                -H "Content-Type: application/json" \
+                -d "$QUERY" https://api.github.com/graphql)
+              
+              echo "DEBUG: Raw Response for $label: $RESPONSE"
 
-            BUG_COUNT=$(echo $RESPONSE | jq '.data.repository.issues.totalCount')
-            if [ "$BUG_COUNT" != "null" ]; then
-              TOTAL_BUGS=$((TOTAL_BUGS + BUG_COUNT))
-            fi
+              BUG_COUNT=$(echo $RESPONSE | jq '.data.repository.issues.totalCount')
+              if [ "$BUG_COUNT" != "null" ]; then
+                total=$((total + BUG_COUNT))
+              fi
 
-            HAS_NEXT_PAGE=$(echo $RESPONSE | jq '.data.repository.issues.pageInfo.hasNextPage')
-            END_CURSOR=$(echo $RESPONSE | jq -r '.data.repository.issues.pageInfo.endCursor')
+              HAS_NEXT_PAGE=$(echo $RESPONSE | jq '.data.repository.issues.pageInfo.hasNextPage')
+              END_CURSOR=$(echo $RESPONSE | jq -r '.data.repository.issues.pageInfo.endCursor')
 
-            if [ "$HAS_NEXT_PAGE" != "true" ]; then
-              break
-            fi
-          done
+              if [ "$HAS_NEXT_PAGE" != "true" ]; then
+                break
+              fi
+            done
+            echo $total
+          }
+
+          TOTAL_BUGS=$(calculate_total "bug")
+          TOTAL_DOCS=$(calculate_total "documentation")
+          TOTAL_ENHANCEMENTS=$(calculate_total "enhancement")
 
           mkdir -p public
-          echo "{\"resolved_bugs\": $TOTAL_BUGS}" > public/bug-count.json
+          echo "{\"resolved_bugs\": $TOTAL_BUGS, \"resolved_documentation\": $TOTAL_DOCS, \"resolved_enhancements\": $TOTAL_ENHANCEMENTS}" > public/issue-count.json
 
       - name: Check Git Status
         run: |
           git status
           git diff
 
-      - name: Commit and Push Bug Count
+      - name: Commit and Push Issue Count
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
-          git add public/bug-count.json
-          git commit -m "Update bug count" || echo "No changes to commit"
+          git add public/issue-count.json
+          git commit -m "Update issue count" || echo "No changes to commit"
           git push

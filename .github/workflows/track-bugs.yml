@@ -12,17 +12,27 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Fetch Closed Bug Issues
+      - name: Fetch All Closed Bug Issues (Paginated)
         run: |
-          curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-               -H "Accept: application/vnd.github.v3+json" \
-               "https://api.github.com/repos/3ee-Games/3ee-api/issues?labels=bug&state=closed" \
-               > bugs.json
-
-      - name: Count Resolved Bugs
-        run: |
-          BUG_COUNT=$(jq '. | length' bugs.json)
-          echo "{\"resolved_bugs\": $BUG_COUNT}" > public/bug-count.json
+          PAGE=1
+          TOTAL_BUGS=0
+          
+          while :; do
+            RESPONSE=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+                 -H "Accept: application/vnd.github.v3+json" \
+                 "https://api.github.com/repos/3ee-Games/3ee-api/issues?labels=bug&state=closed&page=$PAGE&per_page=100")
+            
+            BUG_COUNT=$(echo $RESPONSE | jq '. | length')
+            
+            if [ $BUG_COUNT -eq 0 ]; then
+              break
+            fi
+            
+            TOTAL_BUGS=$((TOTAL_BUGS + BUG_COUNT))
+            PAGE=$((PAGE + 1))
+          done
+          
+          echo "{\"resolved_bugs\": $TOTAL_BUGS}" > public/bug-count.json
 
       - name: Commit and Push Bug Count
         run: |

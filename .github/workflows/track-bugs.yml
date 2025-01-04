@@ -42,6 +42,7 @@ jobs:
 
           # Loop to handle pagination and get total bug count
           while :; do
+            # Make the API request
             RESPONSE=$(curl -s -X POST -H "Authorization: Bearer $TOKEN" \
               -H "Content-Type: application/json" \
               -d "$QUERY" https://api.github.com/graphql)
@@ -49,12 +50,16 @@ jobs:
             # Debugging: Print the raw API response to check what's returned
             echo "DEBUG: Raw Response: $RESPONSE"
 
+            # Check if totalCount is returned and increment total bugs
             BUG_COUNT=$(echo $RESPONSE | jq '.data.repository.issues.totalCount')
-            TOTAL_BUGS=$((TOTAL_BUGS + BUG_COUNT))
+            if [ "$BUG_COUNT" != "null" ]; then
+              TOTAL_BUGS=$((TOTAL_BUGS + BUG_COUNT))
+            fi
 
             HAS_NEXT_PAGE=$(echo $RESPONSE | jq '.data.repository.issues.pageInfo.hasNextPage')
             END_CURSOR=$(echo $RESPONSE | jq -r '.data.repository.issues.pageInfo.endCursor')
 
+            # If no more pages, stop the loop
             if [ "$HAS_NEXT_PAGE" != "true" ]; then
               break
             fi

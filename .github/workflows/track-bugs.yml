@@ -32,7 +32,7 @@ jobs:
               '{
                 query: "query($endCursor: String, $label: String!) {
                   repository(owner: \"3ee-Games\", name: \"hoa-simulator\") {
-                    issues(first: 100, labels: [$label], states: CLOSED, after: $endCursor) {
+                    issues(first: 100, labels: [\($label)], states: CLOSED, after: $endCursor) {
                       totalCount
                       pageInfo {
                         endCursor

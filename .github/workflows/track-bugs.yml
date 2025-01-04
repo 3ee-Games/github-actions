@@ -20,7 +20,7 @@ jobs:
         run: |
           TOKEN=${{ secrets.GITHUB_TOKEN }}
           OWNER="3ee-Games"
-          REPO="hoa-simulator"
+          REPO="3ee-api"
           LABEL="bug"
           TOTAL_BUGS=0
           
@@ -28,7 +28,7 @@ jobs:
           cat <<EOF > query.json
           {
             "query": "query {
-              repository(owner: \"3ee-Games\", name: \"hoa-simulator\") {
+              repository(owner: \"3ee-Games\", name: \"3ee-api\") {
                 issues(first: 100, labels: [\"bug\"], states: CLOSED) {
                   totalCount
                 }

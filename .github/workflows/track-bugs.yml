@@ -26,32 +26,29 @@ jobs:
             LABEL=$1
             END_CURSOR=$2
 
-            jq -n \
-              --arg endCursor "$END_CURSOR" \
-              --arg label "$LABEL" \
-              '{
-                query: "query($endCursor: String, $label: String!) {
-                  repository(owner: \"3ee-Games\", name: \"hoa-simulator\") {
-                    issues(first: 100, labels: [\"\($label)\"], states: CLOSED, after: $endCursor) {
-                      totalCount
-                      pageInfo {
-                        endCursor
-                        hasNextPage
-                      }
+            QUERY=$(cat <<EOF
+            {
+              "query": "query {
+                repository(owner: \"$OWNER\", name: \"$REPO\") {
+                  issues(first: 100, labels: [\"$LABEL\"], states: CLOSED, after: $END_CURSOR) {
+                    totalCount
+                    pageInfo {
+                      endCursor
+                      hasNextPage
                     }
                   }
-                }",
-                variables: {
-                  endCursor: $endCursor,
-                  label: $label
                 }
-              }'
+              }"
+            }
+            EOF
+            )
+            echo $QUERY
           }
 
           count_issues_by_label() {
             LABEL=$1
             TOTAL_COUNT=0
-            END_CURSOR=null
+            END_CURSOR="null"
 
             while :; do
               QUERY=$(fetch_issues "$LABEL" "$END_CURSOR")

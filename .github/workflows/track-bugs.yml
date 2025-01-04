@@ -21,18 +21,16 @@ jobs:
           TOKEN=${{ secrets.GITHUB_TOKEN }}
           OWNER="3ee-Games"
           REPO="hoa-simulator"
-          END_CURSOR=null
+          END_CURSOR=null  # Proper null value
           TOTAL_BUGS=0
           
           # Construct query dynamically
           create_query() {
             jq -n \
-              --arg owner "$OWNER" \
-              --arg repo "$REPO" \
               --argjson endCursor "$END_CURSOR" \
               '{
                 query: "query($endCursor: String) {
-                  repository(owner: $owner, name: $repo) {
+                  repository(owner: \"3ee-Games\", name: \"hoa-simulator\") {
                     issues(first: 100, labels: [\"bug\"], states: CLOSED, after: $endCursor) {
                       totalCount
                       pageInfo {

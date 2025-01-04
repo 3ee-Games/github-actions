@@ -40,6 +40,9 @@ jobs:
             "variables": { "endCursor": '"$END_CURSOR"' }
           }'
 
+          # Print the constructed query to debug it
+          echo "DEBUG: Constructed Query: $QUERY"
+
           # Loop to handle pagination and get total bug count
           while :; do
             # Make the API request

@@ -18,7 +18,7 @@ jobs:
         
       - name: Fetch All Closed Issues (GraphQL)
         run: |
-          TOKEN=${{ secrets.GITHUB_TOKEN }}
+          TOKEN=${{ secrets.PAT_TOKEN }}
           OWNER="3ee-Games"
           REPO="hoa-simulator"
 

@@ -2,7 +2,7 @@ name: Track 3ee API Resolved Issues
 
 on:
   schedule:
-    - cron: '0 0 * * *'  #Runs daily at midnight
+    - cron: '0 0 * * *'
   workflow_dispatch:
 
 permissions:

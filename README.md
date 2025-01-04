@@ -1,6 +1,6 @@
-# 3ee Games Issue Tracker GitHub Actions
+# 3ee Games Issue Tracker
 
-Welcome to the 3ee Games Issue Tracker GitHub Actions repository! This repository is part of our commitment to providing transparency to our players and community, showcasing the ongoing work we do to improve our games and services. By tracking issues, bugs, enhancements, and other tasks automatically, we aim to keep everyone informed about the development process.
+This repository is part of our commitment to providing transparency to our players and community, showcasing the ongoing work we do to improve our games and services. By tracking issues, bugs, enhancements, and other tasks automatically, we aim to keep everyone informed about the development process.
 
 ## Purpose
 

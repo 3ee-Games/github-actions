@@ -2,7 +2,7 @@ name: Track HOA Sim Resolved Issues
 
 on:
   schedule:
-    - cron: '0 0 * * *'  #Runs daily at midnight
+    - cron: '0 1 * * *'
   workflow_dispatch:
 
 permissions:

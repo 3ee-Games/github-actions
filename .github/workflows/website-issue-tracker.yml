@@ -2,7 +2,7 @@ name: Track 3ee Frontend Resolved Issues
 
 on:
   schedule:
-    - cron: '0 0 * * *'  #Runs daily at midnight
+    - cron: '0 2 * * *'
   workflow_dispatch:
 
 permissions:

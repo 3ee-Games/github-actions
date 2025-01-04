@@ -71,9 +71,9 @@ jobs:
             # Log END_CURSOR to see if there are any strange characters
             echo "DEBUG: END_CURSOR = $END_CURSOR"
 
-            # If END_CURSOR is "null", we pass null in the GraphQL query, else use the value
+            # If END_CURSOR is "null", we pass null (not as a string)
             if [ "$END_CURSOR" = "null" ]; then
-              END_CURSOR="null"  # leave it as the string "null"
+              END_CURSOR=null  # this will be passed as null, not the string "null"
             else
               END_CURSOR=$(printf '%s' "$END_CURSOR" | jq -R .)  # escape normal values
             fi

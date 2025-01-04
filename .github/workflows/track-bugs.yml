@@ -20,39 +20,45 @@ jobs:
         run: |
           TOKEN=${{ secrets.GITHUB_TOKEN }}
           OWNER="3ee-Games"
-          REPO="3ee-api"
-          LABEL="bug"
+          REPO="hoa-simulator"
+          END_CURSOR="null"
           TOTAL_BUGS=0
           
-          # Create temporary GraphQL query file to fetch closed issues
-          cat <<EOF > query.json
-          {
-            "query": "query {
-              repository(owner: \"3ee-Games\", name: \"3ee-api\") {
-                issues(first: 100, labels: [\"bug\"], states: CLOSED) {
+          # Create the GraphQL query
+          QUERY='{
+            "query": "query($endCursor: String) {
+              repository(owner: \"3ee-Games\", name: \"hoa-simulator\") {
+                issues(first: 100, labels: [\"bug\"], states: CLOSED, after: $endCursor) {
                   totalCount
+                  pageInfo {
+                    endCursor
+                    hasNextPage
+                  }
                 }
               }
-            }"
-          }
-          EOF
+            }",
+            "variables": { "endCursor": '"$END_CURSOR"' }
+          }'
 
-          RESPONSE=$(curl -s -X POST -H "Authorization: Bearer $TOKEN" \
-            -H "Content-Type: application/json" \
-            -d @query.json https://api.github.com/graphql)
+          # Loop to handle pagination and get total bug count
+          while :; do
+            RESPONSE=$(curl -s -X POST -H "Authorization: Bearer $TOKEN" \
+              -H "Content-Type: application/json" \
+              -d "$QUERY" https://api.github.com/graphql)
 
-          # Log the entire response for debugging purposes
-          echo "DEBUG: Full Response: $RESPONSE"
+            BUG_COUNT=$(echo $RESPONSE | jq '.data.repository.issues.totalCount')
+            TOTAL_BUGS=$((TOTAL_BUGS + BUG_COUNT))
 
-          # Get the total count of closed bug issues
-          TOTAL_BUGS=$(echo $RESPONSE | jq '.data.repository.issues.totalCount')
+            HAS_NEXT_PAGE=$(echo $RESPONSE | jq '.data.repository.issues.pageInfo.hasNextPage')
+            END_CURSOR=$(echo $RESPONSE | jq -r '.data.repository.issues.pageInfo.endCursor')
 
-          # Check if total bugs is null and log error if so
-          if [ "$TOTAL_BUGS" == "null" ]; then
-            echo "ERROR: Total bugs count is null!"
-          else
-            echo "DEBUG: Total bugs resolved = $TOTAL_BUGS"
-          fi
+            if [ "$HAS_NEXT_PAGE" != "true" ]; then
+              break
+            fi
+
+            # Update the cursor for the next iteration
+            QUERY=$(echo "$QUERY" | jq --arg endCursor "$END_CURSOR" '.variables.endCursor = $endCursor')
+          done
 
           mkdir -p public
           echo "{\"resolved_bugs\": $TOTAL_BUGS}" > public/bug-count.json

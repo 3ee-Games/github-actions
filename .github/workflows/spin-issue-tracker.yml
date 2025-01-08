@@ -1,4 +1,4 @@
-name: Track Gorgon Resolved Issues
+name: Track Spin Resolved Issues
 
 on:
   schedule:

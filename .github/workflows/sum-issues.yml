@@ -57,7 +57,7 @@ jobs:
                       totalResolvedDocs += data.resolved_documentation || 0;
                       totalResolvedEnhancements += data.resolved_enhancements || 0;
                   } catch (err) {
-                      console.error(`Error processing file: ${filePath}`, err.message);
+                      console.log(`Error processing file: ${filePath}`, err.message);
                   }
               }
           });

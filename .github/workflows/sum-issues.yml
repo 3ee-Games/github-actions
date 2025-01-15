@@ -2,7 +2,7 @@ name: Sum Issues
 
 on:
   schedule:
-    - cron: '0 6 * * *' #6 AM
+    - cron: '0 6 * * *' #6am
   workflow_dispatch:
 
 permissions:
@@ -35,6 +35,10 @@ jobs:
           let totalResolvedDocs = 0;
           let totalResolvedEnhancements = 0;
 
+          // Log the start of the process
+          console.log('Starting issue summary generation...');
+          console.log('Public directory path:', publicDir);
+
           // Check if the public directory exists
           if (!fs.existsSync(publicDir)) {
               throw new Error(`Directory not found: ${publicDir}`);
@@ -46,6 +50,7 @@ jobs:
 
               // Only process JSON files
               if (file.endsWith('.json')) {
+                  console.log(`Processing file: ${file}`);
                   try {
                       const data = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
                       totalResolvedBugs += data.resolved_bugs || 0;
@@ -64,8 +69,10 @@ jobs:
               resolved_enhancements: totalResolvedEnhancements,
           };
 
+          console.log('Summarized data:', output);
+
           fs.writeFileSync(outputFile, JSON.stringify(output, null, 2));
-          console.log('Generated all-issues-count.json:', output);
+          console.log('Generated all-issues-count.json successfully.');
           EOF
 
       - name: Commit and Push Changes

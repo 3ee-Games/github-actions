@@ -5,6 +5,10 @@ on:
     - cron: '0 6 * * *' #6 AM
   workflow_dispatch:
 
+permissions:
+  contents: write
+  issues: read
+
 jobs:
   sum-issues:
     runs-on: ubuntu-latest

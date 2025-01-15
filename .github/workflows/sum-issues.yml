@@ -24,55 +24,31 @@ jobs:
 
       - name: Sum Issues from JSON Files
         run: |
+          echo "Running issue summation script"
           node <<EOF
           const fs = require('fs');
-          const path = require('path');
-
-          const publicDir = path.resolve('./public'); // Ensure proper path
-          const outputFile = path.resolve(publicDir, 'all-issues-count.json');
-
+          const path = './public';
           let totalResolvedBugs = 0;
           let totalResolvedDocs = 0;
           let totalResolvedEnhancements = 0;
 
-          // Log the start of the process
-          console.log('Starting issue summary generation...');
-          console.log('Public directory path:', publicDir);
-
-          // Check if the public directory exists
-          if (!fs.existsSync(publicDir)) {
-              throw new Error(`Directory not found: ${publicDir}`);
-          }
-
-          // Read and process each JSON file in the directory
-          fs.readdirSync(publicDir).forEach(file => {
-              const filePath = path.join(publicDir, file); // Properly construct file path
-
-              // Only process JSON files
+          fs.readdirSync(path).forEach(file => {
               if (file.endsWith('.json')) {
-                  console.log(`Processing file: ${file}`);
-                  try {
-                      const data = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
-                      totalResolvedBugs += data.resolved_bugs || 0;
-                      totalResolvedDocs += data.resolved_documentation || 0;
-                      totalResolvedEnhancements += data.resolved_enhancements || 0;
-                  } catch (err) {
-                      console.log(`Error processing file: ${filePath}`, err.message);
-                  }
+                  const data = JSON.parse(fs.readFileSync(`${path}/${file}`, 'utf-8'));
+                  totalResolvedBugs += data.resolved_bugs || 0;
+                  totalResolvedDocs += data.resolved_documentation || 0;
+                  totalResolvedEnhancements += data.resolved_enhancements || 0;
               }
           });
 
-          // Write the summarized data to the output file
           const output = {
               resolved_bugs: totalResolvedBugs,
               resolved_documentation: totalResolvedDocs,
               resolved_enhancements: totalResolvedEnhancements,
           };
 
-          console.log('Summarized data:', output);
-
-          fs.writeFileSync(outputFile, JSON.stringify(output, null, 2));
-          console.log('Generated all-issues-count.json successfully.');
+          fs.writeFileSync('./public/all_issues_count.json', JSON.stringify(output, null, 2));
+          console.log('Generated all_issues_count.json:', output);
           EOF
 
       - name: Commit and Push Changes

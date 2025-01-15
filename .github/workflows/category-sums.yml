@@ -88,6 +88,7 @@ jobs:
           EOF
 
           node script.js
+          rm script.js 
 
       - name: Commit and Push Changes
         run: |

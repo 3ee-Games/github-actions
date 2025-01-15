@@ -34,12 +34,24 @@ jobs:
           let totalResolvedDocs = 0;
           let totalResolvedEnhancements = 0;
 
+          // Check if the directory exists
+          if (!fs.existsSync(path)) {
+              throw new Error(`Directory not found: ${path}`);
+          }
+
           fs.readdirSync(path).forEach(file => {
+              const filePath = `${path}/${file}`; // Full file path
+              
+              // Only process JSON files
               if (file.endsWith('.json')) {
-                  const data = JSON.parse(fs.readFileSync(`${path}/${file}`, 'utf-8'));
-                  totalResolvedBugs += data.resolved_bugs || 0;
-                  totalResolvedDocs += data.resolved_documentation || 0;
-                  totalResolvedEnhancements += data.resolved_enhancements || 0;
+                  try {
+                      const data = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+                      totalResolvedBugs += data.resolved_bugs || 0;
+                      totalResolvedDocs += data.resolved_documentation || 0;
+                      totalResolvedEnhancements += data.resolved_enhancements || 0;
+                  } catch (err) {
+                      console.error(`Error processing file: ${filePath}`, err);
+                  }
               }
           });
 

@@ -1,0 +1,17 @@
+{
+  "games": {
+    "resolved_bugs": 0,
+    "resolved_documentation": 0,
+    "resolved_enhancements": 0
+  },
+  "apis": {
+    "resolved_bugs": 0,
+    "resolved_documentation": 0,
+    "resolved_enhancements": 0
+  },
+  "web": {
+    "resolved_bugs": 0,
+    "resolved_documentation": 0,
+    "resolved_enhancements": 0
+  }
+}

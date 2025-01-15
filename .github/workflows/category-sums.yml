@@ -2,7 +2,7 @@ name: Sum Issues by Category
 
 on:
   schedule:
-    - cron: '0 6 * * *' # 6am
+    - cron: '0 6 * * *' #6am
   workflow_dispatch:
 
 permissions:
@@ -53,13 +53,29 @@ jobs:
 
           // Process each category
           for (const [category, files] of Object.entries(categories)) {
+            console.log(`Processing category: ${category}`);
             files.forEach(file => {
               const filePath = `${path}/${file}`;
+              console.log(`Checking file: ${filePath}`);
+
               if (fs.existsSync(filePath)) {
-                const data = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
-                categorySums[category].resolved_bugs += data.resolved_bugs || 0;
-                categorySums[category].resolved_documentation += data.resolved_documentation || 0;
-                categorySums[category].resolved_enhancements += data.resolved_enhancements || 0;
+                try {
+                  const data = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+                  console.log(`Data from ${filePath}:`, data);
+
+                  // Ensure the JSON has the expected properties
+                  if (data.resolved_bugs !== undefined) {
+                    categorySums[category].resolved_bugs += data.resolved_bugs || 0;
+                  }
+                  if (data.resolved_documentation !== undefined) {
+                    categorySums[category].resolved_documentation += data.resolved_documentation || 0;
+                  }
+                  if (data.resolved_enhancements !== undefined) {
+                    categorySums[category].resolved_enhancements += data.resolved_enhancements || 0;
+                  }
+                } catch (error) {
+                  console.error(`Error reading or parsing ${filePath}:`, error);
+                }
               } else {
                 console.warn(`File not found: ${filePath}`);
               }

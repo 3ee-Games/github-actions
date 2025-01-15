@@ -1,20 +1,16 @@
-name: Sum JSON Issues
+name: Sum Issues
 
 on:
   schedule:
     - cron: '0 6 * * *' #6 AM
   workflow_dispatch:
 
-permissions:
-  contents: write
-  issues: read
-    
 jobs:
   sum-issues:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repository
+      - name: Checkout repository
         uses: actions/checkout@v3
 
       - name: Setup Node.js
@@ -22,26 +18,28 @@ jobs:
         with:
           node-version: '16'
 
-      - name: Install Dependencies
-        run: npm install fs
-
       - name: Sum Issues from JSON Files
         run: |
           node <<EOF
           const fs = require('fs');
-          const path = './public';
+          const path = require('path');
+
+          const publicDir = path.resolve('./public'); // Ensure proper path
+          const outputFile = path.resolve(publicDir, 'all-issues-count.json');
+
           let totalResolvedBugs = 0;
           let totalResolvedDocs = 0;
           let totalResolvedEnhancements = 0;
 
-          // Check if the directory exists
-          if (!fs.existsSync(path)) {
-              throw new Error(`Directory not found: ${path}`);
+          // Check if the public directory exists
+          if (!fs.existsSync(publicDir)) {
+              throw new Error(`Directory not found: ${publicDir}`);
           }
 
-          fs.readdirSync(path).forEach(file => {
-              const filePath = `${path}/${file}`; // Full file path
-              
+          // Read and process each JSON file in the directory
+          fs.readdirSync(publicDir).forEach(file => {
+              const filePath = path.join(publicDir, file); // Properly construct file path
+
               // Only process JSON files
               if (file.endsWith('.json')) {
                   try {
@@ -50,25 +48,26 @@ jobs:
                       totalResolvedDocs += data.resolved_documentation || 0;
                       totalResolvedEnhancements += data.resolved_enhancements || 0;
                   } catch (err) {
-                      console.error(`Error processing file: ${filePath}`, err);
+                      console.error(`Error processing file: ${filePath}`, err.message);
                   }
               }
           });
 
+          // Write the summarized data to the output file
           const output = {
               resolved_bugs: totalResolvedBugs,
               resolved_documentation: totalResolvedDocs,
               resolved_enhancements: totalResolvedEnhancements,
           };
 
-          fs.writeFileSync('./public/all_issues_count.json', JSON.stringify(output, null, 2));
-          console.log('Generated all_issues_count.json:', output);
+          fs.writeFileSync(outputFile, JSON.stringify(output, null, 2));
+          console.log('Generated all-issues-count.json:', output);
           EOF
 
       - name: Commit and Push Changes
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "actions@github.com"
-          git add ./public/all_issues_count.json
-          git commit -m "Update all_issues_count.json [CI]"
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add ./public/all-issues-count.json
+          git commit -m "Update all-issues-count.json"
           git push

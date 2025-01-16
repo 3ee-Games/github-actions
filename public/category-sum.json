@@ -1,13 +1,13 @@
 {
   "games": {
-    "resolved_bugs": 0,
-    "resolved_documentation": 0,
-    "resolved_enhancements": 0
+    "resolved_bugs": 70,
+    "resolved_documentation": 5,
+    "resolved_enhancements": 97
   },
   "apis": {
-    "resolved_bugs": 0,
-    "resolved_documentation": 0,
-    "resolved_enhancements": 0
+    "resolved_bugs": 41,
+    "resolved_documentation": 9,
+    "resolved_enhancements": 58
   },
   "web": {
     "resolved_bugs": 0,

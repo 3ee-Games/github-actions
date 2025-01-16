@@ -2,7 +2,7 @@ name: Sum Issues by Category
 
 on:
   schedule:
-    - cron: '0 6 * * *' #6am
+    - cron: '0 6 * * *'
   workflow_dispatch:
 
 permissions:
@@ -29,71 +29,45 @@ jobs:
           const fs = require('fs');
           const path = './public';
 
-          // Define categories and their associated files
           const categories = {
-            games: [
-              'gorgon-issue-tracker.json',
-              'hoa-issue-tracker.json',
-              'spin-issue-tracker.json',
-            ],
-            apis: [
-              'api-issue-tracker.json',
-            ],
-            web: [
-              'website-issue-tracker.json',
-            ],
+              games: ['gorgon-issue-tracker.yml', 'hoa-issue-tracker.yml', 'spin-issue-tracker.yml'],
+              apis: ['api-issue-tracker.yml'],
+              web: ['website-issue-tracker.yml']
           };
 
-          // Initialize sums for each category
-          const categorySums = {
-            games: { resolved_bugs: 0, resolved_documentation: 0, resolved_enhancements: 0 },
-            apis: { resolved_bugs: 0, resolved_documentation: 0, resolved_enhancements: 0 },
-            web: { resolved_bugs: 0, resolved_documentation: 0, resolved_enhancements: 0 },
+          const sums = {
+              games: { resolved_bugs: 0, resolved_documentation: 0, resolved_enhancements: 0 },
+              apis: { resolved_bugs: 0, resolved_documentation: 0, resolved_enhancements: 0 },
+              web: { resolved_bugs: 0, resolved_documentation: 0, resolved_enhancements: 0 }
           };
 
-          // Process each category
-          for (const [category, files] of Object.entries(categories)) {
-            console.log(`Processing category: ${category}`);
-            files.forEach(file => {
-              const filePath = `${path}/${file}`;
-              console.log(`Checking file: ${filePath}`);
+          // Summarize issues per category
+          fs.readdirSync(path).forEach(file => {
+              if (file.endsWith('.json')) {
+                  const data = JSON.parse(fs.readFileSync(`${path}/${file}`, 'utf-8'));
 
-              if (fs.existsSync(filePath)) {
-                try {
-                  const data = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
-                  console.log(`Data from ${filePath}:`, data);
-
-                  // Ensure the JSON has the expected properties
-                  if (data.resolved_bugs !== undefined) {
-                    categorySums[category].resolved_bugs += data.resolved_bugs || 0;
+                  for (const [category, files] of Object.entries(categories)) {
+                      if (files.includes(file)) {
+                          sums[category].resolved_bugs += data.resolved_bugs || 0;
+                          sums[category].resolved_documentation += data.resolved_documentation || 0;
+                          sums[category].resolved_enhancements += data.resolved_enhancements || 0;
+                      }
                   }
-                  if (data.resolved_documentation !== undefined) {
-                    categorySums[category].resolved_documentation += data.resolved_documentation || 0;
-                  }
-                  if (data.resolved_enhancements !== undefined) {
-                    categorySums[category].resolved_enhancements += data.resolved_enhancements || 0;
-                  }
-                } catch (error) {
-                  console.error(`Error reading or parsing ${filePath}:`, error);
-                }
-              } else {
-                console.warn(`File not found: ${filePath}`);
               }
-            });
-          }
+          });
 
           // Write the category sums to a new JSON file
-          fs.writeFileSync(`${path}/category-sums.json`, JSON.stringify(categorySums, null, 2));
-          console.log('Generated category-sums.json:', categorySums);
+          fs.writeFileSync(`${path}/category-sums.json`, JSON.stringify(sums, null, 2));
+
+          console.log('Generated category-sums.json:', sums);
           EOF
 
           node script.js
-          rm script.js 
 
       - name: Commit and Push Changes
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
-          git add ./public/category-sums.json
-          git commit -m "Update category-sums.json"
+          git add ./public/category-sum.json
+          git commit -m "Update category-sum.json"
           git push

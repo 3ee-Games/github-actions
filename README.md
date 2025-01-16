@@ -1,11 +1,11 @@
 # 3ee Games Issue Tracker
 
-This repository automatically tracks updates on bugs, enhancements, and documentation issues with 3ee Game repo.
+This repository automatically tracks updates on bugs, enhancements, and documentation issues with 3ee Games private repositories.
 
 ## Features
 
 - **Automatic Tracking:** Daily updates based on issue labels (`bug`, `documentation`, `enhancement`) based on select repos.
-- **Transparency:** Changes are documented in the `issue-count` JSON file.
+- **Transparency:** Changes are documented.
 - **Player Confidence:** Demonstrates active development and issue resolution.
 
 ## Contributing

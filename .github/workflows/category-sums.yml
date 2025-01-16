@@ -68,7 +68,6 @@ jobs:
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
-          git add ./public/all-issues-count.json
-          git add ./public/category-sums.json
-          git commit -m "Update all-issues-count.json and category-sums.json"
+          git add ./public/category-sum.json
+          git commit -m "Update category-sum.json"
           git push

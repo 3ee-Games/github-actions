@@ -57,9 +57,9 @@ jobs:
           });
 
           // Write the category sums to a new JSON file
-          fs.writeFileSync(`${path}/category-sums.json`, JSON.stringify(sums, null, 2));
+          fs.writeFileSync(`${path}/category-sum.json`, JSON.stringify(sums, null, 2));
 
-          console.log('Generated category-sums.json:', sums);
+          console.log('Generated category-sum.json:', sums);
           EOF
 
           node script.js

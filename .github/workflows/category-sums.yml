@@ -29,37 +29,37 @@ jobs:
           const fs = require('fs');
           const path = './public';
 
-          const categories = {
-              games: ['gorgon-issue-tracker.yml', 'hoa-issue-tracker.yml', 'spin-issue-tracker.yml'],
-              apis: ['api-issue-tracker.yml'],
-              web: ['website-issue-tracker.yml']
+          const categoryMappings = {
+              games: ['gorgon-issue-count.json', 'hoa-issue-count.json', 'spin-issue-count.json'],
+              apis: ['api-issue-count.json'],
+              web: ['website-issue-count.json']
           };
 
-          const sums = {
+          const categorySums = {
               games: { resolved_bugs: 0, resolved_documentation: 0, resolved_enhancements: 0 },
               apis: { resolved_bugs: 0, resolved_documentation: 0, resolved_enhancements: 0 },
               web: { resolved_bugs: 0, resolved_documentation: 0, resolved_enhancements: 0 }
           };
 
-          // Summarize issues per category
           fs.readdirSync(path).forEach(file => {
               if (file.endsWith('.json')) {
                   const data = JSON.parse(fs.readFileSync(`${path}/${file}`, 'utf-8'));
 
-                  for (const [category, files] of Object.entries(categories)) {
-                      if (files.includes(file)) {
-                          sums[category].resolved_bugs += data.resolved_bugs || 0;
-                          sums[category].resolved_documentation += data.resolved_documentation || 0;
-                          sums[category].resolved_enhancements += data.resolved_enhancements || 0;
+                  for (const [category, jsonFiles] of Object.entries(categoryMappings)) {
+                      if (jsonFiles.includes(file)) {
+                          categorySums[category].resolved_bugs += data.resolved_bugs || 0;
+                          categorySums[category].resolved_documentation += data.resolved_documentation || 0;
+                          categorySums[category].resolved_enhancements += data.resolved_enhancements || 0;
                       }
                   }
               }
           });
 
-          // Write the category sums to a new JSON file
-          fs.writeFileSync(`${path}/category-sum.json`, JSON.stringify(sums, null, 2));
+          // Write the aggregated data to category-sum.json
+          fs.writeFileSync(`${path}/category-sum.json`, JSON.stringify(categorySums, null, 2));
 
-          console.log('Generated category-sum.json:', sums);
+          console.log('Generated category-sum.json:', categorySums);
+
           EOF
 
           node script.js

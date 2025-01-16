@@ -32,7 +32,7 @@ jobs:
           const categoryMappings = {
               games: ['gorgon-issue-count.json', 'hoa-issue-count.json', 'spin-issue-count.json'],
               apis: ['api-issue-count.json'],
-              web: ['website-issue-count.json']
+              web: ['frontend-issue-count.json']
           };
 
           const categorySums = {

@@ -27,6 +27,11 @@ jobs:
           echo "Running issue summation script by category"
           node ./scripts/sum-issues-by-category.js
 
+      - name: Check Git Status
+        run: |
+          git status
+          git diff
+
       - name: Commit and Push Changes
         run: |
           git config user.name "github-actions"

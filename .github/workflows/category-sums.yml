@@ -22,14 +22,10 @@ jobs:
         with:
           node-version: '16'
 
-      - name: Download external script
-        run: |
-          curl -o sum-issues-by-category.js https://raw.githubusercontent.com/3ee-Games/github-actions/refs/heads/main/scripts/sum-issues-by-category.js
-
       - name: Run Sum Issues by Category script
         run: |
           echo "Running issue summation script by category"
-          node sum-issues-by-category.js
+          node ./scripts/sum-issues-by-category.js
 
       - name: Commit and Push Changes
         run: |

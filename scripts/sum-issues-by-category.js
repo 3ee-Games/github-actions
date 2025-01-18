@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = './public';
 
 const categoryMappings = {
-    games: ['gorgon-issue-count.json', 'hoa-issue-count.json', 'spin-issue-count.json'],
+    games: ['gorgon-issue-count.json', 'hoa-issue-count.json', 'spin-issue-count.json', 'angler-issue-count.json', 'hallow-issue-count.json'],
     apis: ['api-issue-count.json'],
     web: ['frontend-issue-count.json']
 };

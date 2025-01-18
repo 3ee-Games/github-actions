@@ -22,47 +22,14 @@ jobs:
         with:
           node-version: '16'
 
-      - name: Sum Issues by Category
+      - name: Download external script
+        run: |
+          curl -o sum-issues-by-category.js https://raw.githubusercontent.com//3ee-Games/github-actions/refs/heads/main/scripts/sum-issues-by-category.js
+
+      - name: Run Sum Issues by Category script
         run: |
           echo "Running issue summation script by category"
-          cat << 'EOF' > script.js
-          const fs = require('fs');
-          const path = './public';
-
-          const categoryMappings = {
-              games: ['gorgon-issue-count.json', 'hoa-issue-count.json', 'spin-issue-count.json'],
-              apis: ['api-issue-count.json'],
-              web: ['frontend-issue-count.json']
-          };
-
-          const categorySums = {
-              games: { resolved_bugs: 0, resolved_documentation: 0, resolved_enhancements: 0 },
-              apis: { resolved_bugs: 0, resolved_documentation: 0, resolved_enhancements: 0 },
-              web: { resolved_bugs: 0, resolved_documentation: 0, resolved_enhancements: 0 }
-          };
-
-          fs.readdirSync(path).forEach(file => {
-              if (file.endsWith('.json')) {
-                  const data = JSON.parse(fs.readFileSync(`${path}/${file}`, 'utf-8'));
-
-                  for (const [category, jsonFiles] of Object.entries(categoryMappings)) {
-                      if (jsonFiles.includes(file)) {
-                          categorySums[category].resolved_bugs += data.resolved_bugs || 0;
-                          categorySums[category].resolved_documentation += data.resolved_documentation || 0;
-                          categorySums[category].resolved_enhancements += data.resolved_enhancements || 0;
-                      }
-                  }
-              }
-          });
-
-          // Write the aggregated data to category-sum.json
-          fs.writeFileSync(`${path}/category-sum.json`, JSON.stringify(categorySums, null, 2));
-
-          console.log('Generated category-sum.json:', categorySums);
-
-          EOF
-
-          node script.js
+          node sum-issues-by-category.js
 
       - name: Commit and Push Changes
         run: |

@@ -33,9 +33,10 @@ jobs:
           git diff
 
       - name: Commit and Push Changes
-        run: |
-          git config user.name "github-actions"
-          git config user.email "actions@github.com"
-          git add ./public/category-sum.json
-          git commit -m "Update category-sum.json"
-          git push
+        uses: EndBug/add-and-commit@v9
+        with:
+          author_name: github-actions
+          author_email: actions@github.com
+          add: ./public/category-sum.json
+          message: "Update category-sum.json"
+          push: true

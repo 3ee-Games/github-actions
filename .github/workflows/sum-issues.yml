@@ -54,9 +54,10 @@ jobs:
           node script.js
 
       - name: Commit and Push Changes
-        run: |
-          git config user.name "github-actions"
-          git config user.email "actions@github.com"
-          git add ./public/all-issues-count.json
-          git commit -m "Update all-issues-count.json"
-          git push
+        uses: EndBug/add-and-commit@v9
+        with:
+          author_name: github-actions
+          author_email: actions@github.com
+          add: ./public/all-issues-count.json
+          message: "Update all-issues-count.json"
+          push: true

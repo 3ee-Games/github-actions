@@ -10,8 +10,8 @@
     "resolved_enhancements": 64
   },
   "web": {
-    "resolved_bugs": 116,
+    "resolved_bugs": 117,
     "resolved_documentation": 2,
-    "resolved_enhancements": 160
+    "resolved_enhancements": 162
   }
 }

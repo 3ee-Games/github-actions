@@ -5,12 +5,12 @@
     "resolved_enhancements": 171
   },
   "apis": {
-    "resolved_bugs": 46,
+    "resolved_bugs": 48,
     "resolved_documentation": 9,
     "resolved_enhancements": 66
   },
   "web": {
-    "resolved_bugs": 126,
+    "resolved_bugs": 128,
     "resolved_documentation": 2,
     "resolved_enhancements": 166
   }

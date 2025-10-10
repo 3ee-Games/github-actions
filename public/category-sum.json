@@ -7,10 +7,10 @@
   "apis": {
     "resolved_bugs": 61,
     "resolved_documentation": 11,
-    "resolved_enhancements": 87
+    "resolved_enhancements": 90
   },
   "web": {
-    "resolved_bugs": 152,
+    "resolved_bugs": 154,
     "resolved_documentation": 2,
     "resolved_enhancements": 194
   }

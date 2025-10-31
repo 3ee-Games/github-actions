@@ -1,6 +1,6 @@
 {
   "games": {
-    "resolved_bugs": 112,
+    "resolved_bugs": 113,
     "resolved_documentation": 9,
     "resolved_enhancements": 176
   },
@@ -10,7 +10,7 @@
     "resolved_enhancements": 92
   },
   "web": {
-    "resolved_bugs": 155,
+    "resolved_bugs": 156,
     "resolved_documentation": 2,
     "resolved_enhancements": 201
   }

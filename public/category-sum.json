@@ -1,17 +1,17 @@
 {
   "games": {
-    "resolved_bugs": 0,
-    "resolved_documentation": 0,
-    "resolved_enhancements": 0
+    "resolved_bugs": 115,
+    "resolved_documentation": 9,
+    "resolved_enhancements": 183
   },
   "apis": {
-    "resolved_bugs": 0,
-    "resolved_documentation": 0,
-    "resolved_enhancements": 0
+    "resolved_bugs": 63,
+    "resolved_documentation": 11,
+    "resolved_enhancements": 99
   },
   "web": {
-    "resolved_bugs": 0,
-    "resolved_documentation": 0,
-    "resolved_enhancements": 0
+    "resolved_bugs": 157,
+    "resolved_documentation": 2,
+    "resolved_enhancements": 203
   }
 }

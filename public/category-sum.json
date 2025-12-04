@@ -1,8 +1,8 @@
 {
   "games": {
-    "resolved_bugs": 115,
+    "resolved_bugs": 116,
     "resolved_documentation": 9,
-    "resolved_enhancements": 187
+    "resolved_enhancements": 188
   },
   "apis": {
     "resolved_bugs": 63,
